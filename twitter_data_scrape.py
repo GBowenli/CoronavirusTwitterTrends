@@ -3,7 +3,7 @@ import numpy as np
 import csv
 
 # load txt file that contains twitter dev keys
-dev_keys = np.loadtxt("twitter_dev_keys.txt", dtype=str, delimiter="\n")
+dev_keys = np.loadtxt('twitter_dev_keys.txt', dtype=str, delimiter='\n')
 
 # set twitter dev keys in variables
 consumer_key = dev_keys[0]
@@ -44,17 +44,17 @@ for index, tweet_id in enumerate(corona_iota_tweet_ids):
 
         for status in statuses:
             # replace newline characters with space
-            tweet_text = status.text.replace("\n", " ")
+            tweet_text = status.text.replace('\n', ' ')
 
             writer.writerow([tweet_text])
 
-   elif index == length_of_tweets-1:
+    elif index == length_of_tweets-1:
        if len(current_twitter_ids) > 0:
             statuses = api.lookup_statuses(current_twitter_ids)
 
             for status in statuses:
                 # replace newline characters with space
-                tweet_text = status.text.replace("\n", " ")
+                tweet_text = status.text.replace('\n', ' ')
 
                 writer.writerow([tweet_text])
 
