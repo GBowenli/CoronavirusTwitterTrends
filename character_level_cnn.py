@@ -15,7 +15,9 @@ class CharacterLevelCNN(Model):
         self.pool6 = layers.MaxPool1D(3)
         self.flatten = layers.Flatten()
         self.d1 = layers.Dense(1024)
+        self.dropout1 = layers.Dropout(0.5)
         self.d2 = layers.Dense(1024)
+        self.dropout2 = layers.Dropout(0.5)
         self.d3 = layers.Dense(2)
 
     def call(self, x):
@@ -30,7 +32,9 @@ class CharacterLevelCNN(Model):
         x = self.pool6(x)
         x = self.flatten(x)
         x = self.d1(x)
+        x = self.dropout1(x)
         x = self.d2(x)
+        x = self.dropout2(x)
         x = self.d3(x)
         return x
 
