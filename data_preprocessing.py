@@ -9,7 +9,8 @@ dataset = dataset_file.readlines()
 pruned_dataset = [' '.join([word for word in text.split() if not word.startswith('@') and not word.startswith('https://')]) for text in dataset]
 
 #remove all characters except letters and numbers and the space character
-pruned_dataset = [''.join(list([char for char in text if char.isalpha() or char.isnumeric() or char == ' '])) for text in pruned_dataset]
+vocabulary = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+pruned_dataset = [''.join(list([char for char in text if char in vocabulary or char == ' '])) for text in pruned_dataset]
 
 # open file in write mode
 # *** the following directory and file need to be created in order for the code to function properly
@@ -18,12 +19,12 @@ writer = csv.writer(file)
 
 # output tweets that have a length greater than 0
 for tweet in pruned_dataset:
-    if len(tweet) > 0:
-        # remove extra spaces in string
-        twee_formated = ' '.join(tweet.split())
+    # remove extra spaces in string
+    tweet_formated = ' '.join(tweet.split())
 
+    if tweet_formated:
         # remove leading and trailing spaces and write to csv
-        writer.writerow([twee_formated.strip()])
+        writer.writerow([tweet_formated.strip()])
 
 # close file
 file.close()

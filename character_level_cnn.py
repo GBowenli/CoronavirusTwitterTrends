@@ -1,6 +1,8 @@
 import tensorflow as tf
 from tensorflow.keras import layers, Model
+import numpy as np
 
+# character level CNN model
 class CharacterLevelCNN(Model):
     def __init__(self):
         super(CharacterLevelCNN, self).__init__()
@@ -38,8 +40,71 @@ class CharacterLevelCNN(Model):
         x = self.d3(x)
         return x
 
-model = CharacterLevelCNN()
+# define all accepted characters
+vocabulary = list("""abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789""")
 
-model.build((62, 500, 1))
+# this method performs one hot encoding to a given text and returns a matrix of size (62, 256, 1)
+def transform_text_to_matrix(text):
+    num_of_columns = 256
 
-model.summary()
+    matrix = np.zeros((len(vocabulary), num_of_columns, 1))
+
+    for index, char in enumerate(text):
+        if char != ' ' and char != '\n':
+            pos_in_vocabulary = vocabulary.index(char)
+            matrix[pos_in_vocabulary][index][0] = 1
+
+        if index == num_of_columns-1:
+            break
+
+    return matrix
+
+#*****************************************************************************************
+# beginning of script
+# get positive and negative datasets
+#*****************************************************************************************
+
+# load positive data from csv
+pos_dataset_file = open('scraped_tweets_pos/iota_tweets_pruned.csv', 'r', encoding='utf-8')
+pos_dataset = pos_dataset_file.readlines()
+
+# TODO: load negative data from csv
+neg_dataset = []
+
+# find split indices
+pos_split_index = len(pos_dataset) * 7 // 10
+neg_split_index = len(neg_dataset) * 7 // 10
+
+# split pos and neg datasets to train and test sets
+pos_train = pos_dataset[:pos_split_index]
+pos_test = pos_dataset[pos_split_index:]
+neg_train = neg_dataset[:neg_split_index]
+neg_test = neg_dataset[neg_split_index:]
+
+# combine positive and negative sets to make train and test sets
+train_set = np.concatenate((pos_train, neg_train))
+test_set = np.concatenate((pos_test, neg_test))
+
+# create y_train, where 0 is neg, 1 is pos
+y_train = np.zeros(train_set.size)
+y_train[:len(pos_train)] = 1
+
+# create y_test, where 0 is neg, 1 is pos
+y_test = np.zeros(test_set.size)
+y_test[:len(pos_test)] = 1
+
+# transform train and test sets with one hot encoding
+train_set_encoded = []
+
+for index, train_sentence in enumerate(train_set):
+    train_sentence_matrix = transform_text_to_matrix(train_sentence)
+    #train_set_encoded.extend(train_sentence_matrix)
+
+print(len(train_set_encoded))
+
+# matrix = transform_text_to_matrix("ab ab ab")
+# print(matrix.shape)
+
+# model = CharacterLevelCNN()
+# model.build((62, 256, 1))
+# model.summary()
