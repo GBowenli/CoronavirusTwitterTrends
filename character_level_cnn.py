@@ -3,18 +3,19 @@ from tensorflow.keras import layers, Model
 import numpy as np
 
 # character level CNN model
+# need to use MaxPool2D with a 1D pool_size because input tensor is 4D (batch_size, vocabulary_size, sentence_size, 1)
 class CharacterLevelCNN(Model):
     def __init__(self):
         super(CharacterLevelCNN, self).__init__()
-        self.conv1 = layers.Conv1D(256, 7, activation='relu')
-        self.pool1 = layers.MaxPool1D(2)
+        self.conv1 = layers.Conv1D(256, 7, activation='relu', input_shape=(None,62,256,1))
+        self.pool1 = layers.MaxPool2D((1,3))
         self.conv2 = layers.Conv1D(256, 7, activation='relu')
-        self.pool2 = layers.MaxPool1D(2)
+        self.pool2 = layers.MaxPool2D((1,3))
         self.conv3 = layers.Conv1D(256, 3, activation='relu')
         self.conv4 = layers.Conv1D(256, 3, activation='relu')
         self.conv5 = layers.Conv1D(256, 3, activation='relu')
         self.conv6 = layers.Conv1D(256, 3, activation='relu')
-        self.pool6 = layers.MaxPool1D(2)
+        self.pool6 = layers.MaxPool2D((1,3))
         self.flatten = layers.Flatten()
         self.d1 = layers.Dense(1024)
         self.dropout1 = layers.Dropout(0.5)
@@ -23,21 +24,66 @@ class CharacterLevelCNN(Model):
         self.d3 = layers.Dense(2)
 
     def call(self, x):
+        # add an extra dimension for filter layer
+        # transform 3D tensor to 4D
+        x = tf.reshape(x, [x.shape[0], x.shape[1], x.shape[2], 1])
+
+        print("init size: " + str(x.get_shape()))
+
         x = self.conv1(x)
+
+        print("conv1 size: " + str(x.get_shape()))
+
         x = self.pool1(x)
+
+        print("pool1 size: " + str(x.get_shape()))
+
         x = self.conv2(x)
+
+        print("conv2 size: " + str(x.get_shape()))
+
         x = self.pool2(x)
+
+        print("pool2 size: " + str(x.get_shape()))
+
         x = self.conv3(x)
+
+        print("conv3 size: " + str(x.get_shape()))
+
         x = self.conv4(x)
+
+        print("conv4 size: " + str(x.get_shape()))
+
         x = self.conv5(x)
+
+        print("conv5 size: " + str(x.get_shape()))
+
         x = self.conv6(x)
+
+        print("conv6 size: " + str(x.get_shape()))
+
         x = self.pool6(x)
+
+        print("pool6 size: " + str(x.get_shape()))
+
         x = self.flatten(x)
+
+        print("flatten size: " + str(x.get_shape()))
+
         x = self.d1(x)
+
+        print("d1 size: " + str(x.get_shape()))
+
         x = self.dropout1(x)
         x = self.d2(x)
+
+        print("d2 size: " + str(x.get_shape()))
+
         x = self.dropout2(x)
         x = self.d3(x)
+
+        print("d3 size: " + str(x.get_shape()))
+
         return x
 
 # define all accepted characters
