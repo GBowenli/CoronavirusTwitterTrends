@@ -7,7 +7,7 @@ import numpy as np
 class CharacterLevelCNN(Model):
     def __init__(self):
         super(CharacterLevelCNN, self).__init__()
-        self.conv1 = layers.Conv1D(256, 7, activation='relu', input_shape=(None,62,256,1))
+        self.conv1 = layers.Conv1D(256, 7, activation='relu')
         self.pool1 = layers.MaxPool2D((1,3))
         self.conv2 = layers.Conv1D(256, 7, activation='relu')
         self.pool2 = layers.MaxPool2D((1,3))
