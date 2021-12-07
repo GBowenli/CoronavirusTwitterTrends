@@ -26,7 +26,9 @@ class CharacterLevelCNN(Model):
     def call(self, x):
         # add an extra dimension for filter layer
         # transform 3D tensor to 4D
-        x = tf.reshape(x, [x.shape[0], x.shape[1], x.shape[2], 1])
+        #x = tf.expand_dims(x, -1).shape.as_list()
+        x = tf.expand_dims(x, -1)
+        #x = tf.reshape(x, [x.shape[0], x.shape[1], x.shape[2], 1])
 
         print("init size: " + str(x.get_shape()))
 
@@ -139,7 +141,10 @@ pos_dataset = pos_dataset_file.readlines()[:100]
 print(len(pos_dataset))
 
 # TODO: load negative data from csv
-neg_dataset = []
+neg_dataset_file = open('scraped_tweets_neg/neg_tweets_e_pruned.csv', 'r', encoding='utf-8')
+neg_dataset = neg_dataset_file.readlines()[:100]
+
+print(len(neg_dataset))
 
 # find split indices
 pos_split_index = len(pos_dataset) * 7 // 10
@@ -209,8 +214,8 @@ for epoch in range(EPOCHS):
   test_loss.reset_states()
   test_accuracy.reset_states()
 
-  for text, labels in train_ds:
-    train_step(text, labels)
+  for train_text, train_labels in train_ds:
+    train_step(train_text, train_labels)
 
   for test_text, test_labels in test_ds:
     test_step(test_text, test_labels)
@@ -222,3 +227,6 @@ for epoch in range(EPOCHS):
     f'Test Loss: {test_loss.result()}, '
     f'Test Accuracy: {test_accuracy.result() * 100}'
   )
+
+# save the model
+model.save('saved_models/character_level_cnn_model')
