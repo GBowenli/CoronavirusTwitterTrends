@@ -9,8 +9,8 @@ dataset = dataset_file.readlines()
 pruned_dataset = [' '.join([word for word in text.split() if not word.startswith('@') and not word.startswith('https://')]) for text in dataset]
 
 #remove all characters except letters and numbers and the space character
-vocabulary = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-pruned_dataset = [''.join(list([char for char in text if char in vocabulary or char == ' '])) for text in pruned_dataset]
+vocabulary = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+pruned_dataset = [''.join(list([char.lower() for char in text if char in vocabulary or char == ' '])) for text in pruned_dataset]
 
 # open file in write mode
 # *** the following directory and file need to be created in order for the code to function properly

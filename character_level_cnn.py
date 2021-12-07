@@ -2,6 +2,10 @@ import tensorflow as tf
 from tensorflow.keras import layers, Model
 import numpy as np
 
+# Allow memory growth for the GPU
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
 # character level CNN model
 # need to use MaxPool2D with a 1D pool_size because input tensor is 4D (batch_size, vocabulary_size, sentence_size, 1)
 class CharacterLevelCNN(Model):
@@ -10,12 +14,12 @@ class CharacterLevelCNN(Model):
         self.conv1 = layers.Conv1D(256, 7, activation='relu')
         self.pool1 = layers.MaxPool2D((1,3))
         self.conv2 = layers.Conv1D(256, 7, activation='relu')
-        self.pool2 = layers.MaxPool2D((1,3))
+        self.pool2 = layers.MaxPool2D((1,2))
         self.conv3 = layers.Conv1D(256, 3, activation='relu')
         self.conv4 = layers.Conv1D(256, 3, activation='relu')
         self.conv5 = layers.Conv1D(256, 3, activation='relu')
         self.conv6 = layers.Conv1D(256, 3, activation='relu')
-        self.pool6 = layers.MaxPool2D((1,3))
+        self.pool6 = layers.MaxPool2D((1,2))
         self.flatten = layers.Flatten()
         self.d1 = layers.Dense(1024)
         self.dropout1 = layers.Dropout(0.5)
@@ -26,9 +30,7 @@ class CharacterLevelCNN(Model):
     def call(self, x):
         # add an extra dimension for filter layer
         # transform 3D tensor to 4D
-        #x = tf.expand_dims(x, -1).shape.as_list()
         x = tf.expand_dims(x, -1)
-        #x = tf.reshape(x, [x.shape[0], x.shape[1], x.shape[2], 1])
 
         print("init size: " + str(x.get_shape()))
 
@@ -89,11 +91,11 @@ class CharacterLevelCNN(Model):
         return x
 
 # define all accepted characters
-vocabulary = list("""abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789""")
+vocabulary = list("""abcdefghijklmnopqrstuvwxyz""")
 
-# this method performs one hot encoding to a given text and returns a matrix of size (62, 256)
+# this method performs one hot encoding to a given text and returns a matrix of size (26, 128)
 def transform_text_to_matrix(text):
-    num_of_columns = 256
+    num_of_columns = 128
 
     matrix = np.zeros((len(vocabulary), num_of_columns))
 
@@ -136,13 +138,13 @@ def test_step(text, labels):
 # load positive data from csv
 pos_dataset_file = open('scraped_tweets_pos/iota_tweets_pruned.csv', 'r', encoding='utf-8')
 #TODO: remove the [:100] used for testing!
-pos_dataset = pos_dataset_file.readlines()[:100]
+pos_dataset = pos_dataset_file.readlines()[:50000]
 
 print(len(pos_dataset))
 
 # TODO: load negative data from csv
 neg_dataset_file = open('scraped_tweets_neg/neg_tweets_e_pruned.csv', 'r', encoding='utf-8')
-neg_dataset = neg_dataset_file.readlines()[:100]
+neg_dataset = neg_dataset_file.readlines()[:50000]
 
 print(len(neg_dataset))
 
@@ -181,7 +183,7 @@ for index, x_test_sentence in enumerate(x_test_text):
     x_test.append(test_sentence_encoded)
 
 # use tf.data to batch and shuffle dataset
-train_ds = tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(10000).batch(32)
+train_ds = tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(100000).batch(32)
 test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
 
 #*****************************************************************************************
@@ -205,7 +207,7 @@ test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 
 # Create an instance of the model
 model = CharacterLevelCNN()
-EPOCHS = 5
+EPOCHS = 100
 
 for epoch in range(EPOCHS):
   # Reset the metrics at the start of the next epoch
@@ -229,4 +231,4 @@ for epoch in range(EPOCHS):
   )
 
 # save the model
-model.save('saved_models/character_level_cnn_model')
+# model.save('saved_models/character_level_cnn_model')
