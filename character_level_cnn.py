@@ -22,72 +22,71 @@ class CharacterLevelCNN(Model):
         self.pool6 = layers.MaxPool2D((1,2))
         self.flatten = layers.Flatten()
         self.d1 = layers.Dense(1024)
-        self.dropout1 = layers.Dropout(0.5)
-        self.d2 = layers.Dense(1024)
-        self.dropout2 = layers.Dropout(0.5)
-        self.d3 = layers.Dense(2)
+        self.dropout1 = layers.Dropout(0.3)
+        self.d2 = layers.Dense(128)
+        self.dropout2 = layers.Dropout(0.3)
+        self.d3 = layers.Dense(2, activation=tf.keras.activations.softmax)
 
     def call(self, x):
         # add an extra dimension for filter layer
         # transform 3D tensor to 4D
         x = tf.expand_dims(x, -1)
 
-        print("init size: " + str(x.get_shape()))
+        #print("init size: " + str(x.get_shape()))
 
         x = self.conv1(x)
 
-        print("conv1 size: " + str(x.get_shape()))
+        #print("conv1 size: " + str(x.get_shape()))
 
         x = self.pool1(x)
 
-        print("pool1 size: " + str(x.get_shape()))
+        #print("pool1 size: " + str(x.get_shape()))
 
         x = self.conv2(x)
 
-        print("conv2 size: " + str(x.get_shape()))
+        #print("conv2 size: " + str(x.get_shape()))
 
         x = self.pool2(x)
 
-        print("pool2 size: " + str(x.get_shape()))
+        #print("pool2 size: " + str(x.get_shape()))
 
         x = self.conv3(x)
 
-        print("conv3 size: " + str(x.get_shape()))
+        #print("conv3 size: " + str(x.get_shape()))
 
         x = self.conv4(x)
 
-        print("conv4 size: " + str(x.get_shape()))
+        #print("conv4 size: " + str(x.get_shape()))
 
         x = self.conv5(x)
 
-        print("conv5 size: " + str(x.get_shape()))
+        #print("conv5 size: " + str(x.get_shape()))
 
         x = self.conv6(x)
 
-        print("conv6 size: " + str(x.get_shape()))
+        #print("conv6 size: " + str(x.get_shape()))
 
         x = self.pool6(x)
 
-        print("pool6 size: " + str(x.get_shape()))
+        #print("pool6 size: " + str(x.get_shape()))
 
         x = self.flatten(x)
 
-        print("flatten size: " + str(x.get_shape()))
+        #print("flatten size: " + str(x.get_shape()))
 
         x = self.d1(x)
 
-        print("d1 size: " + str(x.get_shape()))
+        #print("d1 size: " + str(x.get_shape()))
 
         x = self.dropout1(x)
         x = self.d2(x)
 
-        print("d2 size: " + str(x.get_shape()))
+        #print("d2 size: " + str(x.get_shape()))
 
         x = self.dropout2(x)
         x = self.d3(x)
 
-        print("d3 size: " + str(x.get_shape()))
-
+        #print("d3 size: " + str(x.get_shape()))
         return x
 
 # define all accepted characters
@@ -121,6 +120,15 @@ def train_step(text, labels):
   train_loss(loss)
   train_accuracy(labels, predictions)
 
+# function to validate the model
+@tf.function
+def validate_step(text, labels):
+  predictions = model(text, training=False)
+  t_loss = loss_object(labels, predictions)
+
+  validation_loss(t_loss)
+  validation_accuracy(labels, predictions)
+
 # function to test the model
 @tf.function
 def test_step(text, labels):
@@ -138,33 +146,44 @@ def test_step(text, labels):
 # load positive data from csv
 pos_dataset_file = open('scraped_tweets_pos/iota_tweets_pruned.csv', 'r', encoding='utf-8')
 #TODO: remove the [:100] used for testing!
-pos_dataset = pos_dataset_file.readlines()[:50000]
+pos_dataset = pos_dataset_file.readlines()[:60000]
 
 print(len(pos_dataset))
 
-# TODO: load negative data from csv
 neg_dataset_file = open('scraped_tweets_neg/neg_tweets_e_pruned.csv', 'r', encoding='utf-8')
-neg_dataset = neg_dataset_file.readlines()[:50000]
+#TODO: remove the [:100] used for testing!
+neg_dataset = neg_dataset_file.readlines()
 
 print(len(neg_dataset))
 
 # find split indices
-pos_split_index = len(pos_dataset) * 7 // 10
-neg_split_index = len(neg_dataset) * 7 // 10
+pos_split_middle_index = len(pos_dataset) // 2
+pos_split_three_quarters_index = len(pos_dataset) * 3 // 4
 
-# split pos and neg datasets to train and test sets
-pos_train = pos_dataset[:pos_split_index]
-pos_test = pos_dataset[pos_split_index:]
-neg_train = neg_dataset[:neg_split_index]
-neg_test = neg_dataset[neg_split_index:]
+neg_split_middle_index = len(neg_dataset) * 7 // 10
+neg_split_three_quarters_index = len(neg_dataset) * 3 // 4
+
+# split pos and neg datasets to train, validation and test sets
+pos_train = pos_dataset[:pos_split_middle_index]
+pos_validation = pos_dataset[pos_split_middle_index:pos_split_three_quarters_index]
+pos_test = pos_dataset[pos_split_three_quarters_index:]
+
+neg_train = neg_dataset[:neg_split_middle_index]
+neg_validation = neg_dataset[neg_split_middle_index:neg_split_three_quarters_index]
+neg_test = neg_dataset[neg_split_three_quarters_index:]
 
 # combine positive and negative sets to make train and test sets
 x_train_text = np.concatenate((pos_train, neg_train))
+x_validation_text = np.concatenate((pos_validation, neg_validation))
 x_test_text = np.concatenate((pos_test, neg_test))
 
 # create y_train, where 0 is neg, 1 is pos
 y_train = np.zeros(x_train_text.size)
 y_train[:len(pos_train)] = 1
+
+# create y_validation, where 0 is neg, 1 is pos
+y_validation = np.zeros(x_validation_text.size)
+y_validation[:len(pos_validation)] = 1
 
 # create y_test, where 0 is neg, 1 is pos
 y_test = np.zeros(x_test_text.size)
@@ -176,6 +195,12 @@ for index, x_train_sentence in enumerate(x_train_text):
     train_sentence_encoded = transform_text_to_matrix(x_train_sentence)
     x_train.append(train_sentence_encoded)
 
+# trainsform validation set with one hot encoding
+x_validation = []
+for index, x_validation_sentence in enumerate(x_validation_text):
+    validation_sentence_encoded = transform_text_to_matrix(x_validation_sentence)
+    x_validation.append(validation_sentence_encoded)
+
 # transform test set with one hot encoding
 x_test = []
 for index, x_test_sentence in enumerate(x_test_text):
@@ -184,6 +209,7 @@ for index, x_test_sentence in enumerate(x_test_text):
 
 # use tf.data to batch and shuffle dataset
 train_ds = tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(100000).batch(32)
+validation_ds = tf.data.Dataset.from_tensor_slices((x_validation, y_validation)).batch(32)
 test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
 
 #*****************************************************************************************
@@ -191,12 +217,15 @@ test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
 #*****************************************************************************************
 
 # choose optimizer and loss function for training
-loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+loss_object = tf.keras.losses.SparseCategoricalCrossentropy()
 optimizer = tf.keras.optimizers.Adam()
 
 # select train and test loss and accuracy for the model
 train_loss = tf.keras.metrics.Mean(name='train_loss')
 train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
+
+validation_loss = tf.keras.metrics.Mean(name='validation_loss')
+validation_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='validation_accuracy')
 
 test_loss = tf.keras.metrics.Mean(name='test_loss')
 test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
@@ -209,26 +238,44 @@ test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 model = CharacterLevelCNN()
 EPOCHS = 100
 
+validation_loss_history = []
+
 for epoch in range(EPOCHS):
   # Reset the metrics at the start of the next epoch
   train_loss.reset_states()
   train_accuracy.reset_states()
-  test_loss.reset_states()
-  test_accuracy.reset_states()
+  validation_loss.reset_states()
+  validation_accuracy.reset_states()
 
   for train_text, train_labels in train_ds:
     train_step(train_text, train_labels)
 
-  for test_text, test_labels in test_ds:
-    test_step(test_text, test_labels)
+  for validation_text, validation_labels in validation_ds:
+    validate_step(validation_text, validation_labels)
 
   print(
     f'Epoch {epoch + 1}, '
     f'Loss: {train_loss.result()}, '
     f'Accuracy: {train_accuracy.result() * 100}, '
-    f'Test Loss: {test_loss.result()}, '
-    f'Test Accuracy: {test_accuracy.result() * 100}'
+    f'Validation Loss: {validation_loss.result()}, '
+    f'Validation Accuracy: {validation_accuracy.result() * 100}'
   )
 
+  validation_loss_history.append(validation_loss.result())
+
+  if len(validation_loss_history) > 5:
+    last_five_validation_losses = validation_loss_history[-5:]
+
+    if last_five_validation_losses == sorted(last_five_validation_losses, reverse=False):
+      print("early stopped")
+      break
+
+for test_text, test_labels in test_ds:
+  test_step(test_text, test_labels)
+print(
+  f'test Loss: {test_loss.result()}, '
+  f'test Accuracy: {test_accuracy.result() * 100}'
+)
+
 # save the model
-# model.save('saved_models/character_level_cnn_model')
+model.save('saved_models/character_level_cnn_model')
