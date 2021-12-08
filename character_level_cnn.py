@@ -144,7 +144,7 @@ def test_step(text, labels):
 #*****************************************************************************************
 
 # load positive data from csv
-pos_dataset_file = open('scraped_tweets_pos/iota_tweets_pruned.csv', 'r', encoding='utf-8')
+pos_dataset_file = open('scraped_tweets_pos/pos_tweets_pruned.csv', 'r', encoding='utf-8')
 #TODO: remove the [:100] used for testing!
 pos_dataset = pos_dataset_file.readlines()[:60000]
 
@@ -160,7 +160,7 @@ print(len(neg_dataset))
 pos_split_middle_index = len(pos_dataset) // 2
 pos_split_three_quarters_index = len(pos_dataset) * 3 // 4
 
-neg_split_middle_index = len(neg_dataset) * 7 // 10
+neg_split_middle_index = len(neg_dataset) // 2
 neg_split_three_quarters_index = len(neg_dataset) * 3 // 4
 
 # split pos and neg datasets to train, validation and test sets
