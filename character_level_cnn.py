@@ -90,7 +90,8 @@ class CharacterLevelCNN(Model):
         return x
 
 # define all accepted characters
-vocabulary = list("""abcdefghijklmnopqrstuvwxyz""")
+vocabulary = list("""abcdefghijklmnopqrstuvwxyz0123456789""")
+#vocabulary = list("""abcdefghijklmnopqrstuvwxyz""")
 
 # this method performs one hot encoding to a given text and returns a matrix of size (26, 128)
 def transform_text_to_matrix(text):
@@ -144,15 +145,15 @@ def test_step(text, labels):
 #*****************************************************************************************
 
 # load positive data from csv
-pos_dataset_file = open('scraped_tweets_pos/pos_tweets_pruned.csv', 'r', encoding='utf-8')
+pos_dataset_file = open('scraped_tweets_pos/pos_tweets_pruned_included_numbers.csv', 'r', encoding='utf-8')
 #TODO: remove the [:100] used for testing!
-pos_dataset = pos_dataset_file.readlines()[:60000]
+pos_dataset = pos_dataset_file.readlines()[:30000]
 
 print(len(pos_dataset))
 
-neg_dataset_file = open('scraped_tweets_neg/neg_tweets_e_pruned.csv', 'r', encoding='utf-8')
+neg_dataset_file = open('scraped_tweets_neg/neg_tweets_pruned_included_numbers.csv', 'r', encoding='utf-8')
 #TODO: remove the [:100] used for testing!
-neg_dataset = neg_dataset_file.readlines()
+neg_dataset = neg_dataset_file.readlines()[:30000]
 
 print(len(neg_dataset))
 
