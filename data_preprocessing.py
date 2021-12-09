@@ -11,7 +11,7 @@ for i, text in enumerate(dataset):
     str_builder = []
     for word in text.split():
         if not word.startswith('@'):
-            if 'https' not in word:
+            if 'http' not in word:
                 str_builder.append(word)
             elif not word.startswith('http'):
                 str_builder.append(word.split('http')[0])
