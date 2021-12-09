@@ -32,61 +32,22 @@ class CharacterLevelCNN(Model):
         # transform 3D tensor to 4D
         x = tf.expand_dims(x, -1)
 
-        #print("init size: " + str(x.get_shape()))
-
         x = self.conv1(x)
-
-        #print("conv1 size: " + str(x.get_shape()))
-
         x = self.pool1(x)
-
-        #print("pool1 size: " + str(x.get_shape()))
-
         x = self.conv2(x)
-
-        #print("conv2 size: " + str(x.get_shape()))
-
         x = self.pool2(x)
-
-        #print("pool2 size: " + str(x.get_shape()))
-
         x = self.conv3(x)
-
-        #print("conv3 size: " + str(x.get_shape()))
-
         x = self.conv4(x)
-
-        #print("conv4 size: " + str(x.get_shape()))
-
         x = self.conv5(x)
-
-        #print("conv5 size: " + str(x.get_shape()))
-
         x = self.conv6(x)
-
-        #print("conv6 size: " + str(x.get_shape()))
-
         x = self.pool6(x)
-
-        #print("pool6 size: " + str(x.get_shape()))
-
         x = self.flatten(x)
-
-        #print("flatten size: " + str(x.get_shape()))
-
         x = self.d1(x)
-
-        #print("d1 size: " + str(x.get_shape()))
-
         x = self.dropout1(x)
         x = self.d2(x)
-
-        #print("d2 size: " + str(x.get_shape()))
-
         x = self.dropout2(x)
         x = self.d3(x)
-
-        #print("d3 size: " + str(x.get_shape()))
+        
         return x
 
 # define all accepted characters

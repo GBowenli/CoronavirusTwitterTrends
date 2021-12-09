@@ -5,16 +5,16 @@ import csv
 dataset_file = open('scraped_tweets_neg/neg_tweets.csv', 'r', encoding='utf-8')
 dataset = dataset_file.readlines()
 
-# #remove words that begin with @ , https
+# #remove words that begin with @ , http
 pruned_dataset = []
 for i, text in enumerate(dataset):
     str_builder = []
     for word in text.split():
-        if not word.startswith('"@'):
+        if not word.startswith('@'):
             if 'https' not in word:
                 str_builder.append(word)
-            elif not word.startswith('https'):
-                str_builder.append(word.split('https')[0])
+            elif not word.startswith('http'):
+                str_builder.append(word.split('http')[0])
 
     pruned_dataset.append(' '.join(str_builder))
 
