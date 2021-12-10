@@ -118,11 +118,11 @@ def test_step(text, labels):
 # load positive data from csv
 pos_dataset_file = open('scraped_tweets_pos/pos_tweets_pruned_included_numbers.csv', 'r', encoding='utf-8')
 #TODO: change
-pos_dataset = pos_dataset_file.readlines()[:100]
+pos_dataset = pos_dataset_file.readlines()[:30000]
 
 neg_dataset_file = open('scraped_tweets_neg/neg_tweets_pruned_included_numbers.csv', 'r', encoding='utf-8')
 #TODO: change
-neg_dataset = neg_dataset_file.readlines()[:100]
+neg_dataset = neg_dataset_file.readlines()[:30000]
 
 # find split indices
 pos_split_middle_index = len(pos_dataset) // 2
@@ -247,7 +247,7 @@ print(
   f'test Accuracy: {test_accuracy.result() * 100}, '
   f'test Precision: {test_precision.result() * 100}, '
   f'test Recall: {test_recall.result() * 100}, '
-  f'test F1 Score: {2*test_precision.result()*test_recall.result() / (test_precision.result()+test_recall.result())}, '
+  f'test F1 Score: {2*test_precision.result()*test_recall.result() / (test_precision.result()+test_recall.result())}'
 )
 
 # save the model
@@ -260,11 +260,18 @@ print(
 print("testing of new dataset from different date with new keywords")
 
 # load test datasets from csv files
-x_new_test_text_file = open('test_dataset/x_test_pruned.csv', 'r', encoding='utf-8')
-x_new_test_text = x_new_test_text_file.readlines()
+pos_test_text_file = open('test_dataset/testset_pos_tweets_pruned.csv', 'r', encoding='utf-8')
+pos_test_text = pos_test_text_file.readlines()
 
-y_new_test_file = open('test_dataset/y_test.csv', 'r', encoding='utf-8')
-y_new_test = y_new_test_file.readlines()
+neg_test_text_file = open('test_dataset/testset_neg_tweets_pruned.csv', 'r', encoding='utf-8')
+neg_test_text = neg_test_text_file.readlines()[:500]
+
+# combine positive and negative sets to make new test set
+x_new_test_text = np.concatenate((pos_test_text, neg_test_text))
+
+# create y_test, where 0 is neg, 1 is pos
+y_new_test = np.zeros(x_new_test_text.size)
+y_new_test[:len(pos_test_text)] = 1
 
 # convert test dataset sentences to matrix of size (36, 128)
 x_new_test = []
@@ -286,5 +293,5 @@ print(
   f'test Accuracy: {test_accuracy.result() * 100}, '
   f'test Precision: {test_precision.result() * 100}, '
   f'test Recall: {test_recall.result() * 100}, '
-  f'test F1 Score: {2*test_precision.result()*test_recall.result() / (test_precision.result()+test_recall.result())}, '
+  f'test F1 Score: {2*test_precision.result()*test_recall.result() / (test_precision.result()+test_recall.result())}'
 )
