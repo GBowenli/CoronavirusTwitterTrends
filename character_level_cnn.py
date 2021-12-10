@@ -47,14 +47,13 @@ class CharacterLevelCNN(Model):
         x = self.d2(x)
         x = self.dropout2(x)
         x = self.d3(x)
-        
+
         return x
 
 # define all accepted characters
 vocabulary = list("""abcdefghijklmnopqrstuvwxyz0123456789""")
-#vocabulary = list("""abcdefghijklmnopqrstuvwxyz""")
 
-# this method performs one hot encoding to a given text and returns a matrix of size (26, 128)
+# this method performs one hot encoding to a given text and returns a matrix of size (36, 128)
 def transform_text_to_matrix(text):
     num_of_columns = 128
 
@@ -80,7 +79,10 @@ def train_step(text, labels):
   optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
   train_loss(loss)
-  train_accuracy(labels, predictions)
+
+  # convert predictions with argmax
+  predictions_converted = tf.math.argmax(predictions, axis=1)
+  train_accuracy(labels, predictions_converted)
 
 # function to validate the model
 @tf.function
@@ -89,7 +91,10 @@ def validate_step(text, labels):
   t_loss = loss_object(labels, predictions)
 
   validation_loss(t_loss)
-  validation_accuracy(labels, predictions)
+
+  # convert predictions with argmax
+  predictions_converted = tf.math.argmax(predictions, axis=1)
+  validation_accuracy(labels, predictions_converted)
 
 # function to test the model
 @tf.function
@@ -98,7 +103,12 @@ def test_step(text, labels):
   t_loss = loss_object(labels, predictions)
 
   test_loss(t_loss)
-  test_accuracy(labels, predictions)
+
+  # convert predictions with argmax
+  predictions_converted = tf.math.argmax(predictions, axis=1)
+  test_accuracy(labels, predictions_converted)
+  test_precision(labels, predictions_converted)
+  test_recall(labels, predictions_converted)
 
 #*****************************************************************************************
 # beginning of script
@@ -107,16 +117,12 @@ def test_step(text, labels):
 
 # load positive data from csv
 pos_dataset_file = open('scraped_tweets_pos/pos_tweets_pruned_included_numbers.csv', 'r', encoding='utf-8')
-#TODO: remove the [:100] used for testing!
-pos_dataset = pos_dataset_file.readlines()[:30000]
-
-print(len(pos_dataset))
+#TODO: change
+pos_dataset = pos_dataset_file.readlines()[:100]
 
 neg_dataset_file = open('scraped_tweets_neg/neg_tweets_pruned_included_numbers.csv', 'r', encoding='utf-8')
-#TODO: remove the [:100] used for testing!
-neg_dataset = neg_dataset_file.readlines()[:30000]
-
-print(len(neg_dataset))
+#TODO: change
+neg_dataset = neg_dataset_file.readlines()[:100]
 
 # find split indices
 pos_split_middle_index = len(pos_dataset) // 2
@@ -184,13 +190,15 @@ optimizer = tf.keras.optimizers.Adam()
 
 # select train and test loss and accuracy for the model
 train_loss = tf.keras.metrics.Mean(name='train_loss')
-train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
+train_accuracy = tf.keras.metrics.Accuracy(name='train_accuracy')
 
 validation_loss = tf.keras.metrics.Mean(name='validation_loss')
-validation_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='validation_accuracy')
+validation_accuracy = tf.keras.metrics.Accuracy(name='validation_accuracy')
 
 test_loss = tf.keras.metrics.Mean(name='test_loss')
-test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
+test_accuracy = tf.keras.metrics.Accuracy(name='test_accuracy')
+test_precision = tf.keras.metrics.Precision(name='test_precision')
+test_recall = tf.keras.metrics.Recall(name='test_recall')
 
 #*****************************************************************************************
 # training CNN model
@@ -236,8 +244,47 @@ for test_text, test_labels in test_ds:
   test_step(test_text, test_labels)
 print(
   f'test Loss: {test_loss.result()}, '
-  f'test Accuracy: {test_accuracy.result() * 100}'
+  f'test Accuracy: {test_accuracy.result() * 100}, '
+  f'test Precision: {test_precision.result() * 100}, '
+  f'test Recall: {test_recall.result() * 100}, '
+  f'test F1 Score: {2*test_precision.result()*test_recall.result() / (test_precision.result()+test_recall.result())}, '
 )
 
 # save the model
-model.save('saved_models/character_level_cnn_model')
+#model.save('saved_models/character_level_cnn_model')
+
+#*****************************************************************************************
+# testing of new dataset from different date with new keywords
+#*****************************************************************************************
+
+print("testing of new dataset from different date with new keywords")
+
+# load test datasets from csv files
+x_new_test_text_file = open('test_dataset/x_test_pruned.csv', 'r', encoding='utf-8')
+x_new_test_text = x_new_test_text_file.readlines()
+
+y_new_test_file = open('test_dataset/y_test.csv', 'r', encoding='utf-8')
+y_new_test = y_new_test_file.readlines()
+
+# convert test dataset sentences to matrix of size (36, 128)
+x_new_test = []
+for index, x_new_test_sentence in enumerate(x_new_test_text):
+    test_new_sentence_encoded = transform_text_to_matrix(x_new_test_sentence)
+    x_new_test.append(test_new_sentence_encoded)
+
+test_new_ds = tf.data.Dataset.from_tensor_slices((x_new_test, y_new_test)).batch(32)
+
+test_loss.reset_states()
+test_accuracy.reset_states()
+test_precision.reset_states()
+test_recall.reset_states()
+
+for test_text, test_labels in test_new_ds:
+  test_step(test_text, test_labels)
+print(
+  f'test Loss: {test_loss.result()}, '
+  f'test Accuracy: {test_accuracy.result() * 100}, '
+  f'test Precision: {test_precision.result() * 100}, '
+  f'test Recall: {test_recall.result() * 100}, '
+  f'test F1 Score: {2*test_precision.result()*test_recall.result() / (test_precision.result()+test_recall.result())}, '
+)

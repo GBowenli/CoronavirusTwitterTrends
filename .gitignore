@@ -2,3 +2,4 @@ twitter_dev_keys.txt
 scraped_tweets_pos/
 scraped_tweets_neg/
 saved_models/
+test_dataset/
