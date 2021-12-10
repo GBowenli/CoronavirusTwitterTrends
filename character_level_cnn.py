@@ -32,65 +32,27 @@ class CharacterLevelCNN(Model):
         # transform 3D tensor to 4D
         x = tf.expand_dims(x, -1)
 
-        #print("init size: " + str(x.get_shape()))
-
         x = self.conv1(x)
-
-        #print("conv1 size: " + str(x.get_shape()))
-
         x = self.pool1(x)
-
-        #print("pool1 size: " + str(x.get_shape()))
-
         x = self.conv2(x)
-
-        #print("conv2 size: " + str(x.get_shape()))
-
         x = self.pool2(x)
-
-        #print("pool2 size: " + str(x.get_shape()))
-
         x = self.conv3(x)
-
-        #print("conv3 size: " + str(x.get_shape()))
-
         x = self.conv4(x)
-
-        #print("conv4 size: " + str(x.get_shape()))
-
         x = self.conv5(x)
-
-        #print("conv5 size: " + str(x.get_shape()))
-
         x = self.conv6(x)
-
-        #print("conv6 size: " + str(x.get_shape()))
-
         x = self.pool6(x)
-
-        #print("pool6 size: " + str(x.get_shape()))
-
         x = self.flatten(x)
-
-        #print("flatten size: " + str(x.get_shape()))
-
         x = self.d1(x)
-
-        #print("d1 size: " + str(x.get_shape()))
-
         x = self.dropout1(x)
         x = self.d2(x)
-
-        #print("d2 size: " + str(x.get_shape()))
-
         x = self.dropout2(x)
         x = self.d3(x)
-
-        #print("d3 size: " + str(x.get_shape()))
+        
         return x
 
 # define all accepted characters
-vocabulary = list("""abcdefghijklmnopqrstuvwxyz""")
+vocabulary = list("""abcdefghijklmnopqrstuvwxyz0123456789""")
+#vocabulary = list("""abcdefghijklmnopqrstuvwxyz""")
 
 # this method performs one hot encoding to a given text and returns a matrix of size (26, 128)
 def transform_text_to_matrix(text):
@@ -144,15 +106,15 @@ def test_step(text, labels):
 #*****************************************************************************************
 
 # load positive data from csv
-pos_dataset_file = open('scraped_tweets_pos/pos_tweets_pruned.csv', 'r', encoding='utf-8')
+pos_dataset_file = open('scraped_tweets_pos/pos_tweets_pruned_included_numbers.csv', 'r', encoding='utf-8')
 #TODO: remove the [:100] used for testing!
-pos_dataset = pos_dataset_file.readlines()[:60000]
+pos_dataset = pos_dataset_file.readlines()[:30000]
 
 print(len(pos_dataset))
 
-neg_dataset_file = open('scraped_tweets_neg/neg_tweets_e_pruned.csv', 'r', encoding='utf-8')
+neg_dataset_file = open('scraped_tweets_neg/neg_tweets_pruned_included_numbers.csv', 'r', encoding='utf-8')
 #TODO: remove the [:100] used for testing!
-neg_dataset = neg_dataset_file.readlines()
+neg_dataset = neg_dataset_file.readlines()[:30000]
 
 print(len(neg_dataset))
 

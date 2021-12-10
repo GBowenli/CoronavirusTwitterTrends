@@ -1,47 +1,51 @@
+import csv
 import tweepy
 import numpy as np
-import csv
+from data_preprocessing import preprocessing
 
-# load txt file that contains twitter dev keys
-dev_keys = np.loadtxt('twitter_dev_keys.txt', dtype=str, delimiter='\n')
 
-# set twitter dev keys in variables
-consumer_key = dev_keys[0]
-consumer_secret = dev_keys[1]
-access_token = dev_keys[2]
-access_token_secret = dev_keys[3]
+def test_scrape(api, num_test=101, to_lower=True):
+    # search keyword 'e' as it is the most common letter
+    search_words = "e -filter:retweets"
 
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-api = tweepy.API(auth, wait_on_rate_limit=True)
+    # change the number of items to 60000 to get the negative set
+    tweets = tweepy.Cursor(api.search_tweets,
+                           q=search_words,
+                           lang="en").items(num_test)
 
-# search keyword 'e' as it is the most common letter
-search_words = "e -filter:retweets"
+    # corona keywords in the positive set
+    corona_keywords = np.loadtxt('./keywords_test.tsv', dtype=str, delimiter='\n')
 
-# change the number of items to 60000 to get the negative set
-tweets = tweepy.Cursor(api.search_tweets,
-              q=search_words,
-              lang="en").items(250)
+    file_pos = open('./dataset/test/testset_pos_tweets.csv', 'w', encoding='utf-8', newline='')
+    file_neg = open('./dataset/test/testset_neg_tweets.csv', 'w', encoding='utf-8', newline='')
+    file_info = open('./dataset/test/info/testset_tweets_info.csv', 'w', encoding='utf-8', newline='')
 
-# corona keywords in the positive set
-corona_keywords = np.loadtxt('./keywords.tsv', dtype=str, delimiter='\n')
+    writer_pos = csv.writer(file_pos)
+    writer_neg = csv.writer(file_neg)
+    writer_info = csv.writer(file_info)
 
-file = open('./dataset/test/testset_tweets.csv', 'w', encoding='utf-8', newline='')
-file_info = open('./dataset/test/info/testset_tweets_info.csv', 'w', encoding='utf-8', newline='')
+    for index, tweet in enumerate(tweets):
+        # replace newline characters with space
+        tweet_text = tweet.text.replace('\n', ' ')
+        if any(keyword in tweet_text.lower() for keyword in corona_keywords):
+            writer_pos.writerow([tweet_text])
+            writer_info.writerow([tweet_text, 1, tweet.id, tweet.created_at, tweet.geo])
 
-writer = csv.writer(file)
-writer_info = csv.writer(file_info)
+        else:
+            writer_neg.writerow([tweet_text])
+            writer_info.writerow([tweet_text, 0, tweet.id, tweet.created_at, tweet.geo])
 
-for index, tweet in enumerate(tweets):
-    # replace newline characters with space
-    tweet_text = tweet.text.replace('\n', ' ')
-    if any(keyword in tweet_text.lower() for keyword in corona_keywords):
-        writer.writerow([tweet_text, 1])
-        writer_info.writerow([tweet_text, 1, tweet.id, tweet.created_at, tweet.geo])
+    file_pos.close()
+    file_neg.close()
+    file_info.close()
 
+    if to_lower:
+        preprocessing('./dataset/test/testset_pos_tweets.csv', './dataset/test/testset_pos_tweets_pruned_lower.csv',
+                      to_lower=to_lower)
+        preprocessing('./dataset/test/testset_neg_tweets.csv', './dataset/test/testset_neg_tweets_pruned_lower.csv',
+                      to_lower=to_lower)
     else:
-        writer.writerow([tweet_text, 0])
-        writer_info.writerow([tweet_text, 0, tweet.id, tweet.created_at, tweet.geo])
-
-file.close()
-file_info.close()
+        preprocessing('./dataset/test/testset_pos_tweets.csv', './dataset/test/testset_pos_tweets_pruned_normal.csv',
+                      to_lower=to_lower)
+        preprocessing('./dataset/test/testset_neg_tweets.csv', './dataset/test/testset_neg_tweets_pruned_normal.csv',
+                      to_lower=to_lower)

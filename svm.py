@@ -17,10 +17,12 @@ nltk.download('punkt')
 nltk.download('wordnet')
 nltk.download('averaged_perceptron_tagger')
 
-df_pos = numpy.loadtxt('./dataset/pos/pos_tweets_pruned_normal.csv', delimiter='\n', encoding='utf-8', dtype=str)
-df_neg = numpy.loadtxt('./dataset/neg/neg_tweets_pruned_normal.csv', delimiter='\n', encoding='utf-8', dtype=str)
-twitter_text = numpy.concatenate((df_pos[0:50000], df_neg[0:50000]), axis=0)
-twitter_cat = numpy.concatenate((numpy.ones(50000), numpy.zeros(50000)), axis=0)
+df_pos = numpy.loadtxt('./dataset/pos/pos_tweets_pruned_lower.csv', delimiter='\n', encoding='utf-8', dtype=str)
+df_neg = numpy.loadtxt('./dataset/neg/neg_tweets_pruned_lower.csv', delimiter='\n', encoding='utf-8', dtype=str)
+pos_set = numpy.random.choice(df_pos, size=30000, replace=False)
+neg_set = numpy.random.choice(df_neg, size=30000, replace=False)
+twitter_text = numpy.concatenate((pos_set, neg_set), axis=0)
+twitter_cat = numpy.concatenate((numpy.ones(30000), numpy.zeros(30000)), axis=0)
 
 
 # Normalize data after vectorization process is finished
