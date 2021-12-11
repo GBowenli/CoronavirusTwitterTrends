@@ -5,7 +5,7 @@ import pandas as pd
 from data_preprocessing import preprocessing
 
 
-def pos_scrape(api, num_pos=101, to_lower=True):
+def pos_scrape(api, num_pos=100, to_lower=True):
 
     # load txt file that contains coronavirus twitter ids
     # *** simply replace the *.csv path to a different csv to data scrape from a different twitter id file
@@ -29,7 +29,7 @@ def pos_scrape(api, num_pos=101, to_lower=True):
     # if index reaches end of the end, if current_twitter_ids is not empty, get their statuses as well
     # for index, tweet_id in enumerate(corona_iota_tweet_ids):
     for index, tweet_id in enumerate(df["id"]):
-        if index == num_pos:
+        if index == num_pos+1:
             break
 
         print(index)
@@ -54,9 +54,10 @@ def pos_scrape(api, num_pos=101, to_lower=True):
 
                 for status in statuses:
                     # replace newline characters with space
-                    tweet_text = status.text.replace('\n', ' ')
+                    if (not status.retweeted) and ('RT @' not in status.text):
+                        tweet_text = status.text.replace('\n', ' ')
 
-                    writer.writerow([tweet_text])
+                        writer.writerow([tweet_text])
 
     # close file
     file.close()

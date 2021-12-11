@@ -4,14 +4,14 @@ import numpy as np
 from data_preprocessing import preprocessing
 
 
-def neg_scrape(api, num_neg=101, to_lower=True):
+def neg_scrape(api, num_neg=100, to_lower=True):
     # search keyword 'e' as it is the most common letter
     search_words = "e -filter:retweets"
 
     # change the number of items to 60000 to get the negative set
     tweets = tweepy.Cursor(api.search_tweets,
                            q=search_words,
-                           lang="en").items(num_neg)
+                           lang="en").items(num_neg+1)
 
     # corona keywords in the positive set
     corona_keywords = np.loadtxt('./keywords.tsv', dtype=str, delimiter='\n')
