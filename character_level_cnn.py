@@ -123,7 +123,6 @@ pos_dataset = pos_dataset_file.readlines()[:30000]
 
 # TODO: change the file location for training neg dataset
 neg_dataset_file = open('./dataset/neg/neg_tweets_pruned_lower.csv', 'r', encoding='utf-8')
-
 neg_dataset = neg_dataset_file.readlines()[:30000]
 
 # find split indices (changed to len(pos_dataset) when used for testing new datasets)
@@ -225,7 +224,6 @@ pos_test_text = pos_test_text_file.readlines()
 
 # TODO: change the file location for testing neg dataset
 neg_test_text_file = open('./dataset/test/general/testset_neg_tweets_pruned_lower.csv', 'r', encoding='utf-8')
-
 neg_test_text = neg_test_text_file.readlines()
 
 # combine positive and negative sets to make new test set
