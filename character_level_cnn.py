@@ -2,8 +2,8 @@ import tensorflow as tf
 from tensorflow.keras import layers, Model
 import numpy as np
 
-# Allow memory growth for the GPU\
-#TODO: remove if not running with GPU
+# Allow memory growth for the GPU
+# TODO: remove if not running with GPU
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
@@ -116,13 +116,14 @@ def test_step(text, labels):
 # get positive and negative datasets
 #*****************************************************************************************
 
-# load positive data from 
-#TODO: change the file location for training pos dataset
-pos_dataset_file = open('scraped_tweets_pos/pos_tweets_pruned_included_numbers.csv', 'r', encoding='utf-8')
+# load positive data from
+# TODO: change the file location for training pos dataset
+pos_dataset_file = open('./dataset/pos/pos_tweets_pruned_lower.csv', 'r', encoding='utf-8')
 pos_dataset = pos_dataset_file.readlines()[:30000]
 
-#TODO: change the file location for training neg dataset
-neg_dataset_file = open('scraped_tweets_neg/neg_tweets_pruned_included_numbers.csv', 'r', encoding='utf-8')
+# TODO: change the file location for training neg dataset
+neg_dataset_file = open('./dataset/neg/neg_tweets_pruned_lower.csv', 'r', encoding='utf-8')
+
 neg_dataset = neg_dataset_file.readlines()[:30000]
 
 # find split indices (changed to len(pos_dataset) when used for testing new datasets)
@@ -168,7 +169,7 @@ train_ds = tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(100000
 validation_ds = tf.data.Dataset.from_tensor_slices((x_validation, y_validation)).batch(32)
 
 #*****************************************************************************************
-# selecting loss, accuracy metrics and optimzer
+# selecting loss, accuracy metrics and optimizer
 #*****************************************************************************************
 
 # choose optimizer and loss function for training
@@ -218,12 +219,13 @@ for epoch in range(EPOCHS):
 print("testing of new dataset from different date with new keywords")
 
 # load test datasets from csv files
-#TODO: change the file location for testing pos dataset
-pos_test_text_file = open('test_dataset/general_testset_pos_tweets_pruned_lower.csv', 'r', encoding='utf-8')
+# TODO: change the file location for testing pos dataset
+pos_test_text_file = open('./dataset/test/general/testset_pos_tweets_pruned_lower.csv', 'r', encoding='utf-8')
 pos_test_text = pos_test_text_file.readlines()
 
-#TODO: change the file location for testing neg dataset
-neg_test_text_file = open('test_dataset/general_testset_neg_tweets_pruned_lower.csv', 'r', encoding='utf-8')
+# TODO: change the file location for testing neg dataset
+neg_test_text_file = open('./dataset/test/general/testset_neg_tweets_pruned_lower.csv', 'r', encoding='utf-8')
+
 neg_test_text = neg_test_text_file.readlines()
 
 # combine positive and negative sets to make new test set
