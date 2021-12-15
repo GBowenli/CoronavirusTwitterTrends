@@ -1,6 +1,5 @@
 import csv
 
-
 def preprocessing(from_path, to_path, to_lower=True):
     # load dataset
     # *** simply replace the *.csv path to a different csv to apply this preprocessing to a different file
