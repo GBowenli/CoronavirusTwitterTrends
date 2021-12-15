@@ -26,6 +26,7 @@ general_test_source = './dataset/test/general/source/corona_tweets_631.csv'
 general_test_path = './dataset/test/general/info'
 comparison_test_path = './dataset/test/comparison/info'
 model_path = './models'
+results_path = './dataset/test/results'
 
 if not os.path.exists(dev_path):
     print("Twitter API keys not found, please try again!")
@@ -50,6 +51,9 @@ if not os.path.exists(comparison_test_path):
 
 if not os.path.exists(model_path):
     os.makedirs(model_path)
+
+if not os.path.exists(results_path):
+    os.makedirs(results_path)
 
 api = get_api()
 
